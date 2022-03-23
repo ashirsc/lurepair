@@ -4,3 +4,4 @@ pnpm-global
 dist
 dist-ssr
 *.local
+*.log

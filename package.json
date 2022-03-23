@@ -4,17 +4,19 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "serve": "vite preview",
-    "postinstall": "node ./scripts/addMultiPlatformPackage.js"
+    "serve": "vite preview --host"
   },
   "dependencies": {
-    "antd": "4.19.2",
-    "minerva-ui": "8.0.0",
-    "react": "^17.0.0",
+    "@mantine/core": "^4.0.7",
+    "@mantine/hooks": "^4.0.7",
+    "react": "^17.0.2",
     "react-dom": "^17.0.0",
+    "react-fetch-hook": "^1.8.5",
+    "tabler-icons-react": "^1.39.0",
     "vite": "^2.6.2"
   },
   "devDependencies": {
+    "@types/node": "^17.0.22",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@vitejs/plugin-react": "^1.0.0",
