@@ -14,7 +14,7 @@ export const StatusTags: React.FC<Props> = ({ tags }) => {
                     color = 'blue';
                 } else if (tag === 'inProgress') {
                     color = 'orange';
-                } else if (tag === 'completed') {
+                } else if (tag === 'complete') {
                     color = 'green';
                 }
 

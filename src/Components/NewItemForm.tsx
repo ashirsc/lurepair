@@ -1,9 +1,21 @@
-import { Box, Button, Group, TextInput } from '@mantine/core';
+import { BackendContext, StoreContext } from './Contexts';
+import { Box, Button, Group, Radio, RadioGroup, Select, Slider, TextInput } from '@mantine/core';
+import React, { useContext, useState } from 'react'
+import { makeid, sleep } from './utils';
+import { randomId, useForm } from '@mantine/hooks';
 
-import React from 'react'
-import { useForm } from '@mantine/hooks';
+import { useNotifications } from '@mantine/notifications';
 
 export const NewItemForm = () => {
+    const store = useContext(StoreContext)
+    const [loading, setLoading] = useState(false)
+    const [phone, setPhone] = useState(true);
+
+
+    const notifications = useNotifications();
+    const backend = useContext(BackendContext)
+
+
 
     const form = useForm({
         initialValues: {
@@ -11,7 +23,7 @@ export const NewItemForm = () => {
             firstName: '',
             lastName: '',
             phone: '',
-            ticketId: '',
+            ticketId: makeid(6),
         },
 
         // validate: {
@@ -19,14 +31,40 @@ export const NewItemForm = () => {
         // },
     });
 
+
+
     return (
         <Box sx={{ maxWidth: 300 }} mx="auto">
-            <form onSubmit={form.onSubmit((values) => console.log(values))}>
+            <form onSubmit={form.onSubmit(async (values) => {
+
+                const currentDate = new Date().toISOString()
+                console.log(values)
+                setLoading(true)
+                await sleep(1000)
+
+                await fetch(backend + "/fnCreateWorkItem", {
+                    method: 'POST',
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    }),
+                    body: JSON.stringify({ store, item: { ...values, createdAt: currentDate, tags: ['new'] } }),
+                })
+                form.reset()
+                setLoading(false)
+                notifications.showNotification({
+                    title: `Created ticket ${values.ticketId}`,
+                    message: ``,
+                })
+
+
+            }
+            )}>
                 <Group direction="column" spacing="sm" grow>
 
                     <TextInput
                         required
                         label="Ticket Id"
+                        // value={randomId()}
                         {...form.getInputProps('ticketId')}
 
                     />
@@ -41,24 +79,57 @@ export const NewItemForm = () => {
                         label="Last name"
                         {...form.getInputProps('lastName')}
                     />
-                    <TextInput
+                    {/* <Select
+                        label="Phone / Email"
+                        placeholder="Pick one"
+                        defaultValue={phone ? 'phone' : 'email'}
+                        onChange={(value: string) => value == "phone" ? setPhone(true) : setPhone(false)}
+                        data={[
+                            { value: 'phone', label: 'Phone' },
+                            { value: 'email', label: 'Email' },
+                        ]}
+                    /> */}
+                    <RadioGroup
+                        label="Contact method"
+                        // description="This is anonymous"
+                        defaultValue={phone ? 'phone' : 'email'}
+                        onChange={(value: string) => value == "phone" ? setPhone(true) : setPhone(false)}
                         required
-                        label="Email"
-                        placeholder="your@email.com"
-                        {...form.getInputProps('email')}
-                    />
-                    <TextInput
-                        required
-                        label="Phone number"
-                        {...form.getInputProps('phone')}
-                    />
+                    >
+                        <Radio value="phone" label="Phone" />
+                        <Radio value="email" label="Email" />
+                    </RadioGroup>
+                    {phone ?
+                        <TextInput
+                            required
+                            label="Phone number"
+                            {...form.getInputProps('phone')}
+                        />
+                        :
+                        <TextInput
+                            required
+                            label="Email"
+                            placeholder="your@email.com"
+                            {...form.getInputProps('email')}
+                        />
+                    }
+                    {/* <Slider label="Turn around time"
+                        size="xl"
+                        min={1}
+                        max={28}
+                        marks={[
+                            { value: 7, label: '7 days' },
+                            { value: 14, label: '14 days' },
+                            { value: 21, label: '21 days' },
+                        ]}
+                    /> */}
                 </Group>
 
 
 
 
                 <Group position="right" mt="md">
-                    <Button type="submit">Submit</Button>
+                    <Button loading={loading} type="submit">Submit</Button>
                 </Group>
             </form>
         </Box>

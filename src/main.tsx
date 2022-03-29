@@ -1,6 +1,7 @@
 import { GlobalStyles, MantineProvider } from "@mantine/core";
 
 import { Mantine } from './Components/Mantine'
+import { NotificationsProvider } from '@mantine/notifications';
 import React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -22,8 +23,12 @@ ReactDOM.render(
     <MantineProvider
       defaultProps={defaultProps}
       theme={{ colorScheme: "dark", fontFamilyMonospace: "source code pro", defaultRadius: 'sm' }}>
-      <GlobalStyles />
-      <Mantine />
+      <NotificationsProvider>
+
+
+        <GlobalStyles />
+        <Mantine />
+      </NotificationsProvider>
     </MantineProvider>
   </React.StrictMode>,
   document.getElementById('root')

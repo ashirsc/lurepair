@@ -1,8 +1,10 @@
-import { Box, Button, Checkbox, Col, Divider, Drawer, Input, Space, Text, Title } from "@mantine/core";
+import { Affix, Box, Button, Checkbox, Col, Divider, Drawer, Input, Space, Text, Title } from "@mantine/core";
+import { BackendContext, StoreContext } from "./Contexts";
+import React, { useContext, useState } from 'react'
 
-import React from 'react'
 import { RepairTicket } from "./types";
 import { StatusTags } from "./StatusTags";
+import { useNotifications } from "@mantine/notifications";
 
 interface DesItemProps {
     title?: string;
@@ -41,6 +43,14 @@ interface Props {
 }
 
 export const RepairTicketPanel: React.FC<Props> = ({ ticket, closePanel }) => {
+    const [loading, setLoading] = useState(false);
+    const notifications = useNotifications();
+    const backend = useContext(BackendContext)
+    const store = useContext(StoreContext)
+
+
+
+
     return (
         <Drawer
             title={ticket ? "Ticket: " + ticket.ticketId : "No ticket selected"}
@@ -53,24 +63,47 @@ export const RepairTicketPanel: React.FC<Props> = ({ ticket, closePanel }) => {
 
 
 
-            <Title order={4} >Status</Title>
+            <Title mb={5} order={3} >Status</Title>
+            <Divider />
 
             <StatusTags tags={ticket?.tags ?? []} />
 
-            <DescriptionItem title="Started" content={new Date(Date.parse(ticket?.createdAt ?? "")).toLocaleDateString()} />
-            <DescriptionItem title="Estimated completion date" content={new Date(Date.parse(ticket?.estimatedFinishDate ?? "")).toLocaleDateString()} />
-
+            <DescriptionItem title="Created" content={new Date(Date.parse(ticket?.createdAt ?? "")).toLocaleDateString()} />
+            {/* <DescriptionItem title="Estimated completion date" content={new Date(Date.parse(ticket?.estimatedFinishDate ?? "")).toLocaleDateString()} /> */}
             {ticket?.finishedAt && <DescriptionItem title="Finished date" content={new Date(Date.parse(ticket?.finishedAt ?? "")).toLocaleDateString()} />}
 
-
+            <Space h={'md'} />
+            <Title mb={5} order={3} >Contact</Title>
             <Divider />
-            <Title order={4} >Contact</Title>
-            <DescriptionItem title="Name" content={ticket?.firstName ?? "" + ticket?.lastName ?? ""} />
+            <DescriptionItem title="Name" content={(ticket?.firstName ?? "") + " " + (ticket?.lastName ?? "")} />
             <DescriptionItem title="Email" content={ticket?.email} />
             <DescriptionItem title="Phone" content={ticket?.phone} />
 
+            <Affix position={{ bottom: 20, right: 20 }}>
 
 
+                <Button loading={loading} variant="light"
+                    onClick={async () => {
+                        setLoading(true);
+                        await fetch(backend + "/fnCompleteItem", {
+                            method: 'POST',
+                            headers: new Headers({
+                                'Content-Type': 'application/json'
+                            }),
+                            body: JSON.stringify({ ticket, store }),
+                        })
+                        setLoading(false);
+
+                        notifications.showNotification({
+                            title: `Ticket ${ticket?.ticketId} completed`,
+                            message: `Notifying ${ticket?.firstName}`,
+                        })
+                        closePanel()
+                    }}
+                >
+                    Complete
+                </Button>
+            </Affix>
 
 
 
